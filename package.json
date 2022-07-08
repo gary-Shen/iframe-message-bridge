@@ -1,5 +1,5 @@
 {
-  "name": "message-bridge",
+  "name": "iframe-bridge-promised",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
