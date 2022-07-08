@@ -1,0 +1,25 @@
+{
+  "name": "message-bridge",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "prepare": "yarn run compile",
+    "pretest": "yarn run compile",
+    "posttest": "yarn run lint"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "eventemitter3": "^4.0.7"
+  },
+  "devDependencies": {
+    "typescript": "^4.0.3"
+  }
+}
