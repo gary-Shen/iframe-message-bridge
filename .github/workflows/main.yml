@@ -33,5 +33,6 @@ jobs:
         with:
           node-version: 18
       - run: npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+      - run: npm install
       - run: npm run compile
       - run: npm run release
