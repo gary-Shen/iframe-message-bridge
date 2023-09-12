@@ -6,7 +6,7 @@ A small tool for communicating between window and iframe.
 
 ```ts
 // top 
-import { Bridge } from 'message-bridge';
+import { Bridge } from 'iframe-bridge-promised';
 
 const iframe = document.getElementById('iframe');
 
@@ -22,7 +22,7 @@ bridge.post({ event: 'delay' }).then(() => {
 
 ```ts
 // iframe 
-import { Bridge } from 'message-bridge';
+import { Bridge } from 'iframe-bridge-promised';
 
 const bridge = new Bridge(window.parent);
 
@@ -30,7 +30,7 @@ bridge.registerMessageHandler('say', () => {
   console.log('Hello');
 });
 
-bridge.registerMessageHandler('say', () => {
+bridge.registerMessageHandler('delay', () => {
   return Promise(resolve => {
     setTimeout(resolve, 2000);
   })

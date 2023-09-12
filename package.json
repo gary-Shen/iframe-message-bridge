@@ -1,15 +1,15 @@
 {
   "name": "iframe-bridge-promised",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "tsc",
-    "prepare": "yarn run compile",
-    "pretest": "yarn run compile",
-    "posttest": "yarn run lint"
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "release": "semantic-release"
   },
   "files": [
     "dist"
@@ -20,6 +20,10 @@
     "eventemitter3": "^4.0.7"
   },
   "devDependencies": {
+    "@semantic-release/commit-analyzer": "^10.0.4",
+    "@semantic-release/github": "^9.0.5",
+    "@semantic-release/release-notes-generator": "^11.0.7",
+    "semantic-release": "^21.1.1",
     "typescript": "^4.0.3"
   }
 }

@@ -1,6 +1,6 @@
 import EventEmitter3, { EventNames } from 'eventemitter3';
 
-export default class EventEmitter extends EventEmitter3 {
+export class EventEmitter extends EventEmitter3 {
   constructor() {
     super();
   }

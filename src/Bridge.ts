@@ -1,4 +1,4 @@
-import EventEmitter from './EventEmitter';
+import { EventEmitter } from './EventEmitter';
 
 const createId = () => Math.random().toString(36).substr(2, 9);
 
@@ -17,7 +17,7 @@ export interface IPromiseResult {
   timeoutId: number;
 }
 
-export default class Bridge {
+export class Bridge {
   static TIMEOUT = 20000;
 
   event: EventEmitter = new EventEmitter();
