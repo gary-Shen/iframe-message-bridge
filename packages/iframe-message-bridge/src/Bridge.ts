@@ -20,20 +20,20 @@ export interface BridgeOptions {
   timeout?: number;
   targetOrigin?: string;
   transfer?: Transferable[];
-};
+}
 
 export interface IPromiseResult {
   id: string;
   resolve: (payload: any) => void;
   reject: (reason: string) => void;
-  timeoutId: number;
+  timeoutId: any;
 }
 
 const DEFAULT_PREFIX = 'iframe-message-bridge-';
 const DEFAULT_TIMEOUT = 20000;
 
 export class Bridge {
-  private _event: EventEmitter | null =  new EventEmitter();;
+  private _event: EventEmitter | null = new EventEmitter();
 
   private _options: BridgeOptions = {
     prefix: DEFAULT_PREFIX,
@@ -56,9 +56,9 @@ export class Bridge {
     this.targetWindow = targetWindow;
     this.prefix = prefix;
     this.timeout = timeout;
-    this._options= {
+    this._options = {
       ...this._options,
-      ...options
+      ...options,
     };
 
     window.addEventListener('message', this._messageEventHandler.bind(this));
@@ -107,7 +107,7 @@ export class Bridge {
    * @param name
    * @param handler
    */
-  public on(name: string | IHandler , handler: IHandler) {
+  public on(name: string | IHandler, handler: IHandler) {
     let _name = name;
     let _handler = handler;
 
@@ -203,15 +203,11 @@ export class Bridge {
       return;
     }
 
-    const responseEventResult = (response: any) =>
-      this._responseMsgResult(_msgId, { ...restMsg, payload: response });
-    const responseEventError = (err: any) =>
-      this._responseMsgResult(_msgId, { _error: err, ...restMsg });
+    const responseEventResult = (response: any) => this._responseMsgResult(_msgId, { ...restMsg, payload: response });
+    const responseEventError = (err: any) => this._responseMsgResult(_msgId, { _error: err, ...restMsg });
     try {
       // 监听器必须为函数类型并且返回promise对象
-      this._event!
-        .emit(restMsg.name, restMsg.payload)
-        .then(responseEventResult, responseEventError);
+      this._event!.emit(restMsg.name, restMsg.payload).then(responseEventResult, responseEventError);
     } catch (e) {
       responseEventError(e);
     }
