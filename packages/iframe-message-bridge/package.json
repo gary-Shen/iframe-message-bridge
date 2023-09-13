@@ -1,15 +1,11 @@
 {
   "name": "iframe-message-bridge",
-  "version": "1.0.1",
+  "version": "1.0.0-alpha.0",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "tsc",
-    "prepare": "npm run compile",
-    "start:app1": "vite --port 3100",
-    "pretest": "npm run compile",
     "release": "semantic-release"
   },
   "files": [
