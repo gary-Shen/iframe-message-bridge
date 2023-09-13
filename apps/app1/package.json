@@ -18,6 +18,6 @@
     "vite-plugin-ts-mono-alias": "^1.1.0"
   },
   "dependencies": {
-    "iframe-message-bridge": "^1.0.1"
+    "iframe-message-bridge": "^1.0.0.alpha.0"
   }
 }
