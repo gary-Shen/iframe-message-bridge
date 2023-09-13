@@ -1,13 +1,9 @@
 {
   "name": "iframe-message-bridge-root",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
-  "version": "1.7.0",
+  "version": "1.1.0-alpha.1",
   "scripts": {
-    "release": "cd packages/iframe-message-bridge && npm run release"
+    "release": "cd packages/iframe-message-bridge && npm run compile && npm run release"
   },
   "keywords": [
     "annotation",

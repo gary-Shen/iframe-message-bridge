@@ -10,9 +10,9 @@ env:
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: ["main", "beta", "alpha"]
+    branches: ['master', 'beta', 'alpha']
   pull_request:
-    branches: ["main", "beta", "alpha"]
+    branches: ['master', 'beta', 'alpha']
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -32,7 +32,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-      - run: npm install
-      - run: npm run compile
-      - run: npm run release
+      - name: Release
+        run: |
+          npm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
+          cd ./packages/iframe-message-bridge
+          npm install
+          npm run build
+          npm run release
