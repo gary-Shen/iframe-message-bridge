@@ -22,17 +22,18 @@ function App() {
       bridge.post('delay').then((response) => {
         console.log(response);
       });
+       // with payload
+      bridge
+      .post('greet', {
+        name: 'asdasdasd',
+      })
+      .then((response) => {
+        // Vivian
+        console.log(response);
+      });
     });
 
-    // with payload
-    // bridge
-    //   .post('greet', {
-    //     name: 'asdasdasd',
-    //   })
-    //   .then((response) => {
-    //     // Vivian
-    //     console.log(response.name);
-    //   });
+
   }, []);
 
   return <div>App1

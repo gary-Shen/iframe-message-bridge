@@ -11,31 +11,47 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 import { EventEmitter } from './EventEmitter';
 const createId = () => Math.random().toString(36).substr(2, 9);
+;
+const DEFAULT_PREFIX = 'iframe-message-bridge-';
+const DEFAULT_TIMEOUT = 20000;
 export class Bridge {
-    constructor(targetWindow) {
-        this.event = new EventEmitter();
-        this.timeout = 20000;
+    ;
+    constructor(targetWindow, options = {}) {
+        this._event = new EventEmitter();
+        this._options = {
+            prefix: DEFAULT_PREFIX,
+            timeout: DEFAULT_TIMEOUT,
+            targetOrigin: '*',
+            transfer: undefined,
+        };
         this.promiseMapping = new Map();
+        const { prefix = DEFAULT_PREFIX, timeout = DEFAULT_TIMEOUT } = options;
         this.targetWindow = targetWindow;
-        window.addEventListener('message', ({ data: msg }) => {
-            this._processMessage(msg);
-        });
+        this.prefix = prefix;
+        this.timeout = timeout;
+        this._options = Object.assign(Object.assign({}, this._options), options);
+        window.addEventListener('message', this._messageEventHandler.bind(this));
     }
-    post(msg) {
-        if (!msg) {
-            throw new Error('Message is required');
-        }
-        const name = typeof msg === 'string' ? msg : msg.name;
+    _messageEventHandler({ data: msg }) {
+        this._processMessage(msg);
+    }
+    post(name, payload) {
         if (!name) {
-            throw new Error('Message name is required');
+            throw new Error('Name is required');
         }
+        if (typeof name !== 'string') {
+            throw new Error('Name must be a string');
+        }
+        const _name = `${this.prefix}${name}`;
         return new Promise((resolve, reject) => {
             const id = createId();
             this._sendMessage({
-                name,
+                name: _name,
                 _msgId: id,
+                payload,
             });
             const timeoutId = setTimeout(() => {
+                console.log('timeout', _name);
                 this._rejectMsg(id, 'Timeout');
             }, this.timeout);
             this.promiseMapping.set(id, {
@@ -46,6 +62,11 @@ export class Bridge {
             });
         });
     }
+    /**
+     * 监听消息
+     * @param name
+     * @param handler
+     */
     on(name, handler) {
         let _name = name;
         let _handler = handler;
@@ -53,14 +74,35 @@ export class Bridge {
             _handler = name;
             _name = '*';
         }
-        this.event.on(_name, _handler);
+        const nameWithPrefix = `${this.prefix}${_name}`;
+        this._event.on(nameWithPrefix, _handler);
     }
+    /**
+     * 取消监听消息
+     * @param name
+     * @param handler
+     */
     off(name, handler) {
-        this.event.off(name, handler);
+        const nameWithPrefix = `${this.prefix}${name}`;
+        this._event.off(nameWithPrefix, handler);
     }
+    destroy() {
+        window.removeEventListener('message', this._messageEventHandler.bind(this));
+        this._event.removeAllListeners();
+        this._event = null;
+        this.promiseMapping.clear();
+    }
+    /**
+     * 处理从另一window接收到的消息
+     * @param message
+     * @returns
+     */
     _processMessage(message) {
+        if (typeof message.name !== 'string' || !message.name.startsWith(this.prefix)) {
+            return;
+        }
         try {
-            const msg = JSON.parse(message);
+            const msg = message;
             if (msg._responseMsgId) {
                 return this._processResponseMessage(msg);
             }
@@ -78,13 +120,13 @@ export class Bridge {
      * @returns
      */
     _processResponseMessage(msg) {
-        const msgId = msg.responseMsgId;
+        const msgId = msg._responseMsgId;
         const msgPromise = this._getMsgPromiseById(msgId);
         if (!msgPromise) {
             return;
         }
         clearTimeout(msgPromise.timeoutId);
-        if (msg.err) {
+        if (msg._error) {
             this._rejectMsg(msgId, msg);
         }
         else {
@@ -99,17 +141,16 @@ export class Bridge {
      */
     _processReceiveMessage(message) {
         const { _msgId } = message, restMsg = __rest(message, ["_msgId"]);
-        const event = this.event;
-        if (!event.has(restMsg.name)) {
+        if (!this._event.has(restMsg.name)) {
             this._responseMsgResult(_msgId, Object.assign({ _error: 'Unregistered event' }, message));
             return;
         }
-        const responseEventResult = (response) => this._responseMsgResult(_msgId, Object.assign({ payload: response }, restMsg));
+        const responseEventResult = (response) => this._responseMsgResult(_msgId, Object.assign(Object.assign({}, restMsg), { payload: response }));
         const responseEventError = (err) => this._responseMsgResult(_msgId, Object.assign({ _error: err }, restMsg));
         try {
             // 监听器必须为函数类型并且返回promise对象
-            event
-                .emit(restMsg.name, restMsg)
+            this._event
+                .emit(restMsg.name, restMsg.payload)
                 .then(responseEventResult, responseEventError);
         }
         catch (e) {
@@ -123,7 +164,7 @@ export class Bridge {
             console.warn(`Resolve msgPromise(id: ${msgId}) is not found`);
             return;
         }
-        msgPromise.resolve(data);
+        msgPromise.resolve(data.payload);
     }
     _rejectMsg(msgId, reason) {
         const msgPromise = this._getMsgPromiseById(msgId);
@@ -140,10 +181,10 @@ export class Bridge {
         this.promiseMapping.delete(msgId);
     }
     _sendMessage(msg) {
-        this.targetWindow.postMessage(JSON.stringify(msg), '*');
+        const { targetOrigin, transfer } = this._options;
+        this.targetWindow.postMessage(msg, targetOrigin, transfer);
     }
     _responseMsgResult(msgId, message) {
-        // @ts-ignore
-        this._sendMessage(Object.assign(Object.assign({}, message), { _responseMsgId: msgId }));
+        this._sendMessage(Object.assign(Object.assign({}, message), { _msgId: msgId, _responseMsgId: msgId }));
     }
 }

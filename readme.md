@@ -43,7 +43,8 @@ bridge.on('delay', () => {
   })
 });
 
-bridge.on('greet', () => {
+bridge.on('greet', (payload) => {
+  console.log(payload.name);
   return Promise(resolve => {
     setTimeout(() => {
       resolve({

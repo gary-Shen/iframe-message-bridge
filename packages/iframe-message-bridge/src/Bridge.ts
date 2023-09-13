@@ -15,6 +15,13 @@ export interface IMessage extends MessagePosted {
 
 type IHandler = (msg?: IMessage) => void;
 
+export interface BridgeOptions {
+  prefix?: string;
+  timeout?: number;
+  targetOrigin?: string;
+  transfer?: Transferable[];
+};
+
 export interface IPromiseResult {
   id: string;
   resolve: (payload: any) => void;
@@ -22,52 +29,67 @@ export interface IPromiseResult {
   timeoutId: number;
 }
 
-export class Bridge {
-  event: EventEmitter = new EventEmitter();
+const DEFAULT_PREFIX = 'iframe-message-bridge-';
+const DEFAULT_TIMEOUT = 20000;
 
-  prefix: string = 'iframe-message-bridge-';
+export class Bridge {
+  private _event: EventEmitter | null =  new EventEmitter();;
+
+  private _options: BridgeOptions = {
+    prefix: DEFAULT_PREFIX,
+    timeout: DEFAULT_TIMEOUT,
+    targetOrigin: '*',
+    transfer: undefined,
+  };
+
+  prefix: string;
 
   targetWindow: Window;
 
-  timeout: number = 20000;
+  timeout: number;
 
   promiseMapping = new Map<string, IPromiseResult>();
 
-  constructor(targetWindow: Window, prefix?: string) {
+  constructor(targetWindow: Window, options: BridgeOptions = {}) {
+    const { prefix = DEFAULT_PREFIX, timeout = DEFAULT_TIMEOUT } = options;
+
     this.targetWindow = targetWindow;
+    this.prefix = prefix;
+    this.timeout = timeout;
+    this._options= {
+      ...this._options,
+      ...options
+    };
 
-    if (prefix) {
-      this.prefix = prefix
-    }
-
-    window.addEventListener('message', ({ data: msg }: MessageEvent<IMessage>) => {
-      this._processMessage(msg);
-    });
+    window.addEventListener('message', this._messageEventHandler.bind(this));
   }
 
-  public post(msg: MessagePosted | string) {
-    if (!msg) {
-      throw new Error('Message is required');
-    }
+  private _messageEventHandler({ data: msg }: MessageEvent<IMessage>) {
+    this._processMessage(msg);
+  }
 
-    const name = `${this.prefix}${typeof msg === 'string' ? msg : msg.name}`;
-
+  public post(name: string, payload?: any) {
     if (!name) {
-      throw new Error('Message name is required');
+      throw new Error('Name is required');
     }
 
-    console.info('post', msg);
+    if (typeof name !== 'string') {
+      throw new Error('Name must be a string');
+    }
+
+    const _name = `${this.prefix}${name}`;
 
     return new Promise((resolve, reject) => {
       const id = createId();
 
       this._sendMessage({
-        name,
+        name: _name,
         _msgId: id,
+        payload,
       });
 
       const timeoutId = setTimeout(() => {
-        console.log('timeout', msg);
+        console.log('timeout', _name);
         this._rejectMsg(id, 'Timeout');
       }, this.timeout);
 
@@ -80,6 +102,11 @@ export class Bridge {
     });
   }
 
+  /**
+   * 监听消息
+   * @param name
+   * @param handler
+   */
   public on(name: string | IHandler , handler: IHandler) {
     let _name = name;
     let _handler = handler;
@@ -91,14 +118,31 @@ export class Bridge {
 
     const nameWithPrefix = `${this.prefix}${_name}`;
 
-    this.event.on(nameWithPrefix, _handler);
+    this._event!.on(nameWithPrefix, _handler);
   }
 
+  /**
+   * 取消监听消息
+   * @param name
+   * @param handler
+   */
   public off(name: string, handler: IHandler) {
     const nameWithPrefix = `${this.prefix}${name}`;
-    this.event.off(nameWithPrefix, handler);
+    this._event!.off(nameWithPrefix, handler);
   }
 
+  public destroy() {
+    window.removeEventListener('message', this._messageEventHandler.bind(this));
+    this._event!.removeAllListeners();
+    this._event = null;
+    this.promiseMapping.clear();
+  }
+
+  /**
+   * 处理从另一window接收到的消息
+   * @param message
+   * @returns
+   */
   private _processMessage(message: IMessage) {
     if (typeof message.name !== 'string' || !message.name.startsWith(this.prefix)) {
       return;
@@ -150,8 +194,7 @@ export class Bridge {
   private _processReceiveMessage(message: IMessage) {
     const { _msgId, ...restMsg } = message;
 
-    const event = this.event;
-    if (!event.has(restMsg.name)) {
+    if (!this._event!.has(restMsg.name)) {
       this._responseMsgResult(_msgId, {
         _error: 'Unregistered event',
         ...message,
@@ -160,16 +203,14 @@ export class Bridge {
       return;
     }
 
-    console.info('restMsg', restMsg)
-
     const responseEventResult = (response: any) =>
-      this._responseMsgResult(_msgId, { payload: response, ...restMsg });
+      this._responseMsgResult(_msgId, { ...restMsg, payload: response });
     const responseEventError = (err: any) =>
       this._responseMsgResult(_msgId, { _error: err, ...restMsg });
     try {
       // 监听器必须为函数类型并且返回promise对象
-      event
-        .emit(restMsg.name, restMsg)
+      this._event!
+        .emit(restMsg.name, restMsg.payload)
         .then(responseEventResult, responseEventError);
     } catch (e) {
       responseEventError(e);
@@ -206,12 +247,14 @@ export class Bridge {
   }
 
   private _sendMessage(msg: IMessage) {
-    this.targetWindow.postMessage(msg, '*');
+    const { targetOrigin, transfer } = this._options;
+    this.targetWindow.postMessage(msg, targetOrigin!, transfer);
   }
 
   private _responseMsgResult(msgId: string, message: Omit<IMessage, '_msgId'>) {
     this._sendMessage({
       ...message,
+      _msgId: msgId,
       _responseMsgId: msgId,
     });
   }
