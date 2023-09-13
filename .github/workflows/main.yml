@@ -32,8 +32,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-      - run: cd ./packages/iframe-message-bridge
-      - run: npm install
-      - run: npm run compile
-      - run: npm run release
+      - name: Release
+        run: |
+          npm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
+          cd ./packages/iframe-message-bridge
+          npm install
+          npm run compile
+          npm run release
