@@ -89,7 +89,6 @@ export class Bridge {
       });
 
       const timeoutId = setTimeout(() => {
-        console.log('timeout', _name);
         this._rejectMsg(id, 'Timeout');
       }, this.timeout);
 
