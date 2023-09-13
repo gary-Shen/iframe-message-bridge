@@ -1,4 +1,4 @@
-# message-bridge
+# iframe-message-bridge
 
 A small tool for communicating between window and iframe.
 
@@ -6,7 +6,7 @@ A small tool for communicating between window and iframe.
 
 ```ts
 // top
-import { Bridge } from 'iframe-bridge-promised';
+import { Bridge } from 'iframe-message-bridge';
 
 const iframe = document.getElementById('iframe');
 
@@ -33,7 +33,7 @@ bridge.on('ready', () => {
 
 ```ts
 // iframe
-import { Bridge } from 'iframe-bridge-promised';
+import { Bridge } from 'iframe-message-bridge';
 
 const bridge = new Bridge(window.parent);
 

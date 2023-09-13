@@ -1,4 +1,4 @@
-# message-bridge
+# iframe-message-bridge
 
 A small tool for communicating between window and iframe.
 
