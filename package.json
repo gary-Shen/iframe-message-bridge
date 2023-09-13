@@ -1,25 +1,27 @@
 {
-  "name": "message-bridge",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "name": "iframe-message-bridge-root",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "version": "1.7.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "gts lint",
-    "clean": "gts clean",
-    "compile": "tsc",
-    "fix": "gts fix",
-    "prepare": "yarn run compile",
-    "pretest": "yarn run compile",
-    "posttest": "yarn run lint"
+    "release": "cd packages/iframe-message-bridge && npm run release"
   },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "eventemitter3": "^4.0.7"
+  "keywords": [
+    "annotation",
+    "canvas",
+    "react"
+  ],
+  "homepage": "https://github.com/opendatalab/labelU-Kit.git",
+  "bugs": {
+    "url": "https://github.com/opendatalab/labelU-Kit.git",
+    "email": "751569801@qq.com"
   },
+  "main": "index.js",
+  "license": "Apache-2.0",
   "devDependencies": {
-    "typescript": "^4.0.3"
+    "@shlab/fabric": "^1.2.1"
   }
 }
