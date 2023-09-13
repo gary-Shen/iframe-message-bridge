@@ -7,7 +7,7 @@
   ],
   "version": "1.7.0",
   "scripts": {
-    "release": "cd packages/iframe-message-bridge && npm run release"
+    "release": "cd packages/iframe-message-bridge && npm run compile && npm run release"
   },
   "keywords": [
     "annotation",

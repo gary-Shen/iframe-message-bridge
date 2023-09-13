@@ -33,6 +33,32 @@ jobs:
         with:
           node-version: 18
       - run: npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-      - run: npm install
-      - run: npm run compile
-      - run: npm run release
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Show env
+        run: |
+          echo $RELEASE_VERSION
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Release
+        run: pnpm release
