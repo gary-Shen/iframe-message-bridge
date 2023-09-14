@@ -61,11 +61,15 @@ export class Bridge {
       ...options,
     };
 
-    window.addEventListener('message', this._messageEventHandler.bind(this));
-  }
+    const _messageEventHandler = ({ data: msg }: MessageEvent<IMessage>) => {
+      this._processMessage(msg);
+    };
 
-  private _messageEventHandler({ data: msg }: MessageEvent<IMessage>) {
-    this._processMessage(msg);
+    window.addEventListener('message', _messageEventHandler);
+
+    this.on('$destroy', () => {
+      window.removeEventListener('message', _messageEventHandler);
+    });
   }
 
   public post(name: string, payload?: any) {
@@ -117,7 +121,11 @@ export class Bridge {
 
     const nameWithPrefix = `${this.prefix}${_name}`;
 
-    this._event!.on(nameWithPrefix, _handler);
+    if (!this._event) {
+      throw new Error('Bridge is destroyed');
+    }
+
+    this._event.on(nameWithPrefix, _handler);
   }
 
   /**
@@ -127,12 +135,21 @@ export class Bridge {
    */
   public off(name: string, handler: IHandler) {
     const nameWithPrefix = `${this.prefix}${name}`;
-    this._event!.off(nameWithPrefix, handler);
+
+    if (!this._event) {
+      throw new Error('Bridge is destroyed');
+    }
+
+    this._event.off(nameWithPrefix, handler);
   }
 
   public destroy() {
-    window.removeEventListener('message', this._messageEventHandler.bind(this));
-    this._event!.removeAllListeners();
+    if (!this._event) {
+      throw new Error('Bridge is destroyed');
+    }
+
+    this._event.emit('$destroy');
+    this._event.removeAllListeners();
     this._event = null;
     this.promiseMapping.clear();
   }
@@ -193,7 +210,11 @@ export class Bridge {
   private _processReceiveMessage(message: IMessage) {
     const { _msgId, ...restMsg } = message;
 
-    if (!this._event!.has(restMsg.name)) {
+    if (!this._event) {
+      throw new Error('Bridge is destroyed');
+    }
+
+    if (!this._event.has(restMsg.name)) {
       this._responseMsgResult(_msgId, {
         _error: 'Unregistered event',
         ...message,
@@ -206,7 +227,7 @@ export class Bridge {
     const responseEventError = (err: any) => this._responseMsgResult(_msgId, { _error: err, ...restMsg });
     try {
       // 监听器必须为函数类型并且返回promise对象
-      this._event!.emit(restMsg.name, restMsg.payload).then(responseEventResult, responseEventError);
+      this._event.emit(restMsg.name, restMsg.payload).then(responseEventResult, responseEventError);
     } catch (e) {
       responseEventError(e);
     }
