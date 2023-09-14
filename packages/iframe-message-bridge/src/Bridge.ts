@@ -61,11 +61,15 @@ export class Bridge {
       ...options,
     };
 
-    window.addEventListener('message', this._messageEventHandler.bind(this));
-  }
+    const _messageEventHandler = ({ data: msg }: MessageEvent<IMessage>) => {
+      this._processMessage(msg);
+    };
 
-  private _messageEventHandler({ data: msg }: MessageEvent<IMessage>) {
-    this._processMessage(msg);
+    window.addEventListener('message', _messageEventHandler);
+
+    this.on('$destroy', () => {
+      window.removeEventListener('message', _messageEventHandler);
+    });
   }
 
   public post(name: string, payload?: any) {
@@ -140,12 +144,11 @@ export class Bridge {
   }
 
   public destroy() {
-    window.removeEventListener('message', this._messageEventHandler);
-
     if (!this._event) {
       throw new Error('Bridge is destroyed');
     }
 
+    this._event.emit('$destroy');
     this._event.removeAllListeners();
     this._event = null;
     this.promiseMapping.clear();
