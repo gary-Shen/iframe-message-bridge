@@ -2,7 +2,7 @@
   "name": "iframe-message-bridge",
   "version": "1.0.1",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "vite build && npm run build:types",
