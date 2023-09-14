@@ -1,6 +1,6 @@
 {
   "name": "iframe-message-bridge",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "description": "",
   "main": "dist/index.mjs",
   "types": "dist/index.d.ts",
