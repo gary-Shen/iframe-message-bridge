@@ -117,7 +117,11 @@ export class Bridge {
 
     const nameWithPrefix = `${this.prefix}${_name}`;
 
-    this._event!.on(nameWithPrefix, _handler);
+    if (!this._event) {
+      throw new Error('Bridge is destroyed');
+    }
+
+    this._event.on(nameWithPrefix, _handler);
   }
 
   /**
@@ -127,12 +131,22 @@ export class Bridge {
    */
   public off(name: string, handler: IHandler) {
     const nameWithPrefix = `${this.prefix}${name}`;
-    this._event!.off(nameWithPrefix, handler);
+
+    if (!this._event) {
+      throw new Error('Bridge is destroyed');
+    }
+
+    this._event.off(nameWithPrefix, handler);
   }
 
   public destroy() {
-    window.removeEventListener('message', this._messageEventHandler.bind(this));
-    this._event!.removeAllListeners();
+    window.removeEventListener('message', this._messageEventHandler);
+
+    if (!this._event) {
+      throw new Error('Bridge is destroyed');
+    }
+
+    this._event.removeAllListeners();
     this._event = null;
     this.promiseMapping.clear();
   }
@@ -193,7 +207,11 @@ export class Bridge {
   private _processReceiveMessage(message: IMessage) {
     const { _msgId, ...restMsg } = message;
 
-    if (!this._event!.has(restMsg.name)) {
+    if (!this._event) {
+      throw new Error('Bridge is destroyed');
+    }
+
+    if (!this._event.has(restMsg.name)) {
       this._responseMsgResult(_msgId, {
         _error: 'Unregistered event',
         ...message,
@@ -206,7 +224,7 @@ export class Bridge {
     const responseEventError = (err: any) => this._responseMsgResult(_msgId, { _error: err, ...restMsg });
     try {
       // 监听器必须为函数类型并且返回promise对象
-      this._event!.emit(restMsg.name, restMsg.payload).then(responseEventResult, responseEventError);
+      this._event.emit(restMsg.name, restMsg.payload).then(responseEventResult, responseEventError);
     } catch (e) {
       responseEventError(e);
     }
