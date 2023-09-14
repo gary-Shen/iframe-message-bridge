@@ -1,12 +1,22 @@
 # iframe-message-bridge
 
+[![Version npm](https://img.shields.io/npm/v/iframe-message-bridge.svg?style=flat-square)](https://www.npmjs.com/package/iframe-message-bridge)
+
 A small tool for communicating between window and iframe.
 
 ## Usage
 
+### Basic
+
+```bash
+npm install iframe-message-bridge
+```
+
+### Example
+
 ```ts
 // top
-import { Bridge } from 'iframe-message-bridge';
+import { Bridge } from 'iframe-bridge-promised';
 
 const iframe = document.getElementById('iframe');
 
@@ -33,7 +43,7 @@ bridge.on('ready', () => {
 
 ```ts
 // iframe
-import { Bridge } from 'iframe-message-bridge';
+import { Bridge } from 'iframe-bridge-promised';
 
 const bridge = new Bridge(window.parent);
 
@@ -60,3 +70,25 @@ bridge.on('greet', (payload) => {
   });
 });
 ```
+
+### Options
+
+#### targetWindow `required`
+
+The target window object.
+
+#### prefix `default: 'iframe-message-bridge'`
+
+The prefix of event name. only used internally to prevent irrelevant postMessage event.
+
+#### timeout `default: 20000`
+
+The timeout of post event promise.
+
+#### targetOrigin `default: '*'`
+
+see [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)
+
+#### transfer `default: undefined`
+
+see [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)

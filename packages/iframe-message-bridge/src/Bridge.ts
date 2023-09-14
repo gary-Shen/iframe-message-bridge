@@ -67,7 +67,7 @@ export class Bridge {
 
     window.addEventListener('message', _messageEventHandler);
 
-    this.on('$destroy', () => {
+    this._event!.on('$destroy', () => {
       window.removeEventListener('message', _messageEventHandler);
     });
   }
