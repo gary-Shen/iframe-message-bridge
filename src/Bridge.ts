@@ -4,7 +4,7 @@ const createId = () => Math.random().toString(36).substr(2, 9);
 
 export interface MessagePosted {
   name: string;
-  payload?: any;
+  payload: any;
 }
 
 export interface IMessage extends MessagePosted {
@@ -26,7 +26,7 @@ export interface IPromiseResult {
   id: string;
   resolve: (payload: any) => void;
   reject: (reason: string) => void;
-  timeoutId: any;
+  timeoutId: ReturnType<typeof setTimeout>;
 }
 
 const DEFAULT_PREFIX = 'iframe-message-bridge-';
@@ -151,6 +151,10 @@ export class Bridge {
     this._event.emit('$destroy');
     this._event.removeAllListeners();
     this._event = null;
+    this.promiseMapping.forEach((promise) => {
+      clearTimeout(promise.timeoutId);
+      promise.reject('Bridge is destroyed');
+    });
     this.promiseMapping.clear();
   }
 

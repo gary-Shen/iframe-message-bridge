@@ -1,23 +1,31 @@
 {
-  "name": "iframe-message-bridge-root",
-  "private": true,
-  "version": "1.1.0-alpha.1",
+  "name": "iframe-message-bridge",
+  "version": "1.0.3-alpha.4",
+  "description": "",
+  "main": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "release": "cd packages/iframe-message-bridge && npm run compile && npm run release"
+    "build": "vite build && npm run build:types",
+    "build:types": "tsc --emitDeclarationOnly",
+    "release": "semantic-release"
   },
-  "keywords": [
-    "annotation",
-    "canvas",
-    "react"
+  "files": [
+    "dist"
   ],
-  "homepage": "https://github.com/opendatalab/labelU-Kit.git",
-  "bugs": {
-    "url": "https://github.com/opendatalab/labelU-Kit.git",
-    "email": "751569801@qq.com"
-  },
-  "main": "index.js",
+  "author": "",
   "license": "MIT",
+  "dependencies": {
+    "eventemitter3": "^4.0.7"
+  },
   "devDependencies": {
-    "@shlab/fabric": "^1.2.1"
+    "@semantic-release/commit-analyzer": "^10.0.4",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.0.5",
+    "@semantic-release/release-notes-generator": "^11.0.7",
+    "semantic-release": "^21.1.1",
+    "typescript": "^4.0.3",
+    "vite": "^4.4.9",
+    "@shlab/fabric": "^1.2.1",
+    "vite-tsconfig-paths": "^4.2.1"
   }
 }
