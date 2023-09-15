@@ -1,3 +1,5 @@
+import { resolve } from 'path';
+
 import { defineConfig } from 'vite';
 import tsMonoAlias from 'vite-plugin-ts-mono-alias';
 import react from '@vitejs/plugin-react';
@@ -12,8 +14,12 @@ export default defineConfig({
 
   plugins: [
     react(),
-    tsMonoAlias({}),
-    ],
+    tsMonoAlias({
+      alias: {
+        'iframe-message-bridge': resolve(__dirname, '../../src/index.ts'),
+      },
+    }),
+  ],
   build: {
     target: 'es2015',
     terserOptions: {
