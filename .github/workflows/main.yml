@@ -35,7 +35,6 @@ jobs:
       - name: Release
         run: |
           npm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
-          cd ./packages/iframe-message-bridge
           npm install
           npm run build
           npm run release
