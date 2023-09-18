@@ -18,7 +18,7 @@
     "vite-plugin-ts-mono-alias": "^1.1.0"
   },
   "dependencies": {
-    "iframe-message-bridge": "^1.0.4",
+    "iframe-message-bridge": "^1.1.0",
     "react-router": "^6.16.0",
     "react-router-dom": "^6.16.0"
   }
